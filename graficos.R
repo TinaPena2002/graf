@@ -385,10 +385,214 @@ ggplot(df_aux, aes(x = score, y = linea_sf, colour = mora)) + geom_point() + geo
 
 
 
+### Nuevos gráficos: Severidad del atraso según variables demográficas: 
+
+
+## Bivariadas:
+
+
+#Días de atraso y tipo de vivienda
+
+df_aux <- df %>% select(atraso, vivienda, edad, nivel_educ_clean, ingreso, deuda_sf_clean) %>% 
+  filter(atraso>0) %>% 
+  mutate(Tipoedad = cut(edad, breaks = c(20,24,59,85), include.lowest = TRUE,labels = c("Jovenes adultos", "Adultos", "Adultos mayores"))) %>% 
+  mutate(Tipoatraso = cut(atraso, breaks = c(0,21,245), include.lowest = TRUE,labels = c("Atraso Leve","Atraso Severo")))%>% 
+  mutate(Tipoingreso = cut(ingreso, breaks = c(0,1360,4900, 30000), labels = c("Ingresos Bajos", "Ingresos Medios", "Ingresos Altos")))
 
 
 
 
+
+ggplot(df_aux, aes(x = vivienda, y = log(atraso), fill = vivienda)) + geom_boxplot() +
+  labs(title = "Severidad del atraso según tipo de vivienda", x = "Tipo de vivienda", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B", "azure4")) + 
+  theme_bw()
+
+#Días de atraso y edad
+
+##boxplot
+ggplot(df_aux, aes(x = (Tipoedad), y = log(atraso), fill = Tipoedad)) + geom_boxplot() +
+  labs(title = "Severidad del atraso según edad", x = "Edad", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B", "azure4")) + 
+  theme_bw()
+
+##Barras
+
+ggplot(df_aux, aes(x = Tipoedad, fill = Tipoatraso)) + geom_bar(position = "fill")+
+  labs(title = "Severidad del atraso según edad", x = "Edad", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B"))+
+  theme_bw()
+
+##Torta
+ggplot(df_aux, aes(x = "", fill = Tipoatraso)) + geom_bar(position = "fill")+
+  coord_polar(theta = "y")+
+  facet_wrap(~Tipoedad) +
+  labs(title = "Severidad del atraso según edad", x = "Edad", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("azure4", "#CAFF70", "#9BCD9B")) + 
+  theme_bw()
+
+
+
+
+##Dias de atraso y nivel educativo
+
+##Barras
+ggplot(df_aux, aes(x = nivel_educ_clean, fill = Tipoatraso)) + geom_bar(position = "fill")+
+  labs(title = "Severidad del atraso según Nivel Educativo", x = "Nivel Educativo", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B")) + 
+  theme_bw()
+
+##Boxplot
+ggplot(df_aux, aes(x = nivel_educ_clean, y = log(atraso), fill = nivel_educ_clean)) + geom_boxplot()+
+  labs(title = "Severidad del atraso según Nivel Educativo", x = "Nivel Educativo", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B")) + 
+  theme_bw()
+
+## Dias de atraso segun nivel de ingresos
+
+
+ggplot(df_aux, aes(x = Tipoingreso, y = log(atraso), fill = Tipoingreso)) + geom_boxplot()+
+  labs(title = "Severidad del atraso según Nivel de ingresos", x = "", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B", "azure3")) + 
+  theme_bw()
+
+ggplot(df_aux, aes(x=Tipoatraso, y = log(ingreso), fill = Tipoatraso)) + geom_boxplot()+
+  labs(title = "Distribucion del ingreso segun severidad de atrasos", x = "", y = "Ingreso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B", "azure3")) + 
+  theme_bw()
+
+ggplot(df_aux, aes(x = Tipoingreso, fill = (Tipoatraso))) + geom_bar(position = "fill")+
+  labs(title = "Severidad del atraso según Nivel de ingresos", x = "", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B")) + 
+  theme_bw()
+
+
+
+## Dias de atraso segun nivel de deuda
+
+df_aux <- df %>% select(atraso, deuda_sf_clean, mora) %>% 
+  filter(mora == 1) %>% 
+  mutate(catDeuda = cut(deuda_sf_clean, breaks = quantile(deuda_sf_clean, probs = c(0,0.15,0.85,1)), labels = c("baja", "media", "alta"), include.lowest = TRUE)) %>% 
+  mutate(Tipoatraso = cut(atraso, breaks = c(0,21,245), include.lowest = TRUE,labels = c("Atraso Leve","Atraso Severo")))
+
+ggplot(df_aux, aes(x = catDeuda, y = log(atraso), fill = catDeuda)) + geom_boxplot() + 
+  labs(title = "Severidad del atraso según Tipo de Deuda", x = "Tipo de Deuda", y = "Duración de atraso (log)", fill = "") +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B", "azure2")) + 
+  theme_bw()
+
+
+##Dias de atraso segun experiencia financiera
+
+df_aux <- df %>% select(atraso, exp_sf_clean) %>% 
+  mutate(Tipoexp = cut(exp_sf_clean, breaks = quantile(exp_sf_clean, probs = c(0,0.2,0.8,1)), include.lowest = TRUE, labels  =c("Baja", "Media", " Alta"))) %>% 
+  mutate(Tipoatraso = cut(atraso, breaks = c(0,21,245), include.lowest = TRUE,labels = c("Atraso Leve","Atraso Severo")))
+  
+df_aux <- df_aux %>%
+  group_by(Tipoexp, Tipoatraso) %>%
+  mutate(n = ifelse(Tipoatraso == "Atraso Severo", -n, n)) 
+
+
+ggplot(df_aux, aes(x = Tipoexp, y = n, fill = Tipoatraso)) + 
+  geom_bar(stat = "identity") + 
+  coord_flip() +
+  scale_y_continuous(labels = abs) +
+  labs(title = "Experiencia financiera según el tipo de atraso", y = "", x = "Experiencia financiera", fill = "Tipo de Atraso:") + 
+  scale_fill_manual(values = c("plum","plum4"))
+
+
+## Atraso y linea de credito 
+
+
+df_aux <- df %>% select(atraso, linea_sf, mora) %>% filter(!is.na(linea_sf)) %>% 
+  mutate(LINEA = cut(linea_sf, breaks = c(quantile(linea_sf, probs = c(0,0.25,0.75,1))), labels = c("Bajas", "Medias", "Altas"), include.lowest = TRUE)) %>% 
+  mutate(Tipoatraso = cut(atraso, breaks = c(0,21,245), include.lowest = TRUE,labels = c("Atraso Leve","Atraso Severo"))) %>% 
+  mutate(AA = factor(mora, levels = 0:1, labels = c("No Moroso, Moroso")))
+
+quantile(df_aux$linea_sf)
+
+ggplot(df_aux, aes(x = LINEA, y = log(atraso), fill = LINEA))+ geom_boxplot() +
+  labs(title = "Longitud de atraso según linea de crédito", y = "Días de atraso (log)", x = "Tipo de línea de crédito") +
+  scale_fill_manual(values = c("aquamarine2","aquamarine3", "aquamarine4"))
+
+ggplot(df_aux, aes(x = LINEA, fill = Tipoatraso)) + geom_bar(position = "dodge") +
+  labs(title = "Tipo de atraso según linea de crédito", x = "Tipo de línea de crédito", y = "", fill = "Tipo de Atraso") +
+  scale_fill_manual(values = c("plum","aquamarine3")) + 
+  theme_bw()
+
+ggplot(df_aux,aes( x = LINEA, fill = as.factor(mora))) + geom_bar() + 
+  scale_fill_manual(values = c("plum","aquamarine3")) + 
+  labs(title = "Morosidad según línea de crédito", x = "Tipo de línea de crédito", y = "", fill = "Mora") 
+
+ggplot(df_aux, aes(x = as.factor(mora), y = log(linea_sf), fill = as.factor(mora))) + geom_boxplot() + 
+  scale_fill_manual(values = c("plum","aquamarine3")) + 
+  labs(title = "Línea de crédito según morosidad de clientes", x = "", y = "", fill = "Mora") 
+
+
+##Mora según tipo de deuda 
+
+df_aux <- df %>% select(mora, deuda_sf) %>%
+  mutate(catDeuda = cut(deuda_sf, breaks = quantile(deuda_sf, probs = c(0,0.15,0.85,1), na.rm = TRUE), labels = c("baja", "media", "alta"), include.lowest = TRUE)) %>% 
+  filter(!is.na(catDeuda)) %>% 
+  mutate(mora = factor(mora, levels = 0:1, labels = c("No moroso", "Moroso"))) 
+
+ggplot(df_aux, aes(x = catDeuda, fill = as.factor(mora))) + geom_bar(position = "dodge") + 
+  theme_bw() +
+  scale_fill_manual(values = c("plum","lightblue")) + 
+  labs(title = "Mora según tipo de deuda", x = "Tipo de Deuda", y = "", fill = "Mora")
+
+  
+
+
+##Mora segun score
+
+df_aux <- df %>% select(mora, clasif_sbs) %>% mutate(mora = factor(mora, levels = 0:1, labels = c("No moroso", "Moroso"))) 
+  
+ggplot(df_aux, aes(x = clasif_sbs, fill = as.factor(mora))) + geom_bar(position = "dodge") +
+  labs(title = "Mora según clasificación crediticia", x = "Clasificación crediticia", y = "Frecuencia absoluta", fill = "Mora") + 
+  theme_bw() + 
+  scale_fill_manual(values = c("plum","lightblue")) 
+  
+ggplot(df_aux, aes(x = "", fill = (mora))) + 
+  geom_bar(position = "fill") + coord_polar(theta = "y") + 
+  facet_wrap(~ clasif_sbs) + labs(title = "Morosidad: Clasificación crediticia", y = "", fill = "Mora", x = "") + 
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B")) +
+  theme_bw()
+
+df_aux1 <- df_aux %>%
+  count(clasif_sbs, mora)
+
+
+ggplot(df_aux1, aes(x = clasif_sbs, y = mora, fill = n)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "plum") +
+  labs(title = "Frecuencia de combinaciones de morosidad con Clasificación crediticia", x = "Clasificación crediticia", y = "Mora", fill = "Frecuencia") +
+  theme_minimal()
+
+
+##Mora según experiencia financiera
+
+df_aux <- df %>% select(mora, exp_sf_clean)  %>% 
+  mutate(exp_sf_clean = cut(exp_sf_clean, breaks  = c(0,7,50,300), include.lowest = TRUE, right = FALSE,labels = c("Baja", "Media","Alta"))) %>% 
+  filter(exp_sf_clean != "Media") %>% 
+  mutate(mora = factor(mora, levels = 0:1, labels = c("No moroso", "Moroso"))) 
+
+ggplot(df_aux, aes(x = exp_sf_clean, fill = as.factor(mora))) + geom_bar(position = "fill") +
+  labs(title = "Morosidad según experiencia financiera", x = "Experiencia financiera", y = "Frecuencia relativa", fill = "") + 
+  theme_bw() + 
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B")) 
+
+## Mora según vivienda
+
+df_aux <- df %>% select(vivienda_clean, mora) %>% 
+  mutate(mora = factor(mora, levels = 0:1, labels = c("No moroso", "Moroso"))) 
+
+ggplot(df_aux, aes(x = "", fill = as.factor(mora))) + 
+  geom_bar(position = "fill") + 
+  coord_polar(theta = "y") + 
+  facet_wrap(~vivienda_clean) +
+  scale_fill_manual(values = c("#CAFF70", "#9BCD9B")) +
+  labs(title = "Mora según tipo de vivienda", x = "", y ="", fill = "") + 
+  theme_bw()
 
 
 
